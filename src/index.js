@@ -1,9 +1,32 @@
 import express from "express";
 import cors from "cors";
 import storage from "./memory_storage";
+const siwe = require("siwe");
 
 const app = express(); // instanciranje aplikacije
 const port = 3000; // port na kojem će web server slušati
+
+const domain = "localhost";
+const origin = "https://localhost/login";
+
+function createSiweMessage(address, statement) {
+  const siweMessage = new siwe.SiweMessage({
+    domain,
+    address,
+    statement,
+    uri: origin,
+    version: "1",
+    chainId: 1,
+  });
+  return siweMessage.prepareMessage();
+}
+
+console.log(
+  createSiweMessage(
+    "0x6Ee9894c677EFa1c56392e5E7533DE76004C8D94",
+    "This is a test statement."
+  )
+);
 
 app.use(cors()); // omogući CORS na svim rutama
 app.use(express.json()); // automatsko dekodiranje JSON poruku
