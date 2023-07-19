@@ -11,8 +11,7 @@ import { EvmChain } from "@moralisweb3/common-evm-utils";
 import storage from "./memory_storage";
 
 const app = express(); // instanciranje aplikacije
-const port = process.env.PORT || 3001; // port na kojem će web server slušati, čemu alternativa 3001?
-
+const port = process.env.PORT || 3001; // env var PORT je postavljena u slučaju da hosting koji ću koristiti (render) ima već postavljenu PORT var kao default
 // omogući CORS na svim rutama
 // dopusti credentials poput kolačića u cross-origin zahtjevima
 app.use(cors({ credentials: true }));

@@ -3,7 +3,6 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      PORT: number;
       APP_DOMAIN: string;
       MORALIS_API_KEY: string;
       APP_URI: string;
