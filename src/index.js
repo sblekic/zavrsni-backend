@@ -11,15 +11,29 @@ import { EvmChain } from "@moralisweb3/common-evm-utils";
 import storage from "./memory_storage";
 
 const app = express(); // instanciranje aplikacije
-const port = process.env.PORT || 3001; // env var PORT je postavljena u slučaju da hosting koji ću koristiti (render) ima već postavljenu PORT var kao default
+
+// iz https://stackoverflow.com/questions/18864677/what-is-process-env-port-in-node-js
+// env var PORT je postavljena u slučaju da hosting koji ću koristiti (render) ima već postavljenu PORT var kao default
+const port = process.env.PORT || 3000;
+
 // omogući CORS na svim rutama
 // dopusti credentials poput kolačića u cross-origin zahtjevima
-app.use(cors({ credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://showstarter.netlify.app",
+      "https://64bff9f81ce4190008c58965--showstarter.netlify.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
 const messageConfig = {
+  // domain i uri moraju biti u skladu sa frontendom, odnosno ne mogu ovdje označiti url gdje vite hosta ne networku (http://192.168.1.107:5173) a potpisati message sa localhost-a
   domain: process.env.APP_DOMAIN,
   statement: "Please sign this message to confirm your identity.",
   uri: process.env.APP_URI,
@@ -44,8 +58,9 @@ app.post("/posts", (req, res) => {
 
 // request message to be signed by client
 app.post("/request-message", async (req, res) => {
-  console.log(req.body);
+  // console.log("sadržaj request body: ", req.body);
   const { address, chain, network } = req.body;
+  console.log("request message api connected");
 
   try {
     const message = await Moralis.Auth.requestMessage({
@@ -81,7 +96,11 @@ app.post("/verify", async (req, res) => {
     // set JWT cookie
     res.cookie("jwt", token, {
       httpOnly: true,
+      sameSite: "none",
+      secure: true,
     });
+
+    console.log("user objekt", user);
 
     res.status(200).json(user);
   } catch (error) {
@@ -117,7 +136,8 @@ const startServer = async () => {
   });
 
   app.listen(port, () =>
-    console.log("Slušam na: \x1b[36m%s\x1b[0m", `http://127.0.0.1:${port}`)
+    // console.log("Slušam na: \x1b[36m%s\x1b[0m", `http://127.0.0.1:${port}`)
+    console.log(`backend sluša na port ${port}`)
   );
 };
 
