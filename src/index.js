@@ -111,8 +111,10 @@ app.post("/verify", async (req, res) => {
 
 app.get("/authenticate", async (req, res) => {
   const token = req.cookies.jwt;
-  if (!token) return res.sendStatus(403); // if the user did not send a jwt token, they are unauthorized
-
+  if (!token) {
+    console.log("No token sent");
+    return res.sendStatus(403); // if the user did not send a jwt token, they are unauthorized
+  }
   try {
     const data = jwt.verify(token, process.env.AUTH_SECRET);
     res.json(data);
