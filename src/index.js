@@ -1,15 +1,17 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import "dotenv/config";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "./middleware/errorHandler";
+const dotenv = require("dotenv");
 
 import Moralis from "moralis";
 import { EvmChain } from "@moralisweb3/common-evm-utils";
 
 import storage from "./memory_storage";
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 const app = express(); // instanciranje aplikacije
 
@@ -42,6 +44,7 @@ app.get("/errorTest", (request, response) => {
   // throw an error with status code of 400
   let error = new Error(`Glavna poruka greške koja inače sadrži neki kod`);
   error.name = "IME GRESKE";
+  // @ts-ignore
   error.statusCode = 6969; // ts izbaci grešku jer u interface nije ništa drugo definirano. ali mogu ja staviti u objektu šta god želim I guess
   throw error;
 });
