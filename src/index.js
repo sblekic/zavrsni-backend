@@ -20,11 +20,7 @@ const port = process.env.PORT || 3000;
 // dopusti credentials poput kolačića u cross-origin zahtjevima
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://showstarter.netlify.app",
-      "https://64bff9f81ce4190008c58965--showstarter.netlify.app",
-    ],
+    origin: ["http://localhost:5173", "https://showstarter.netlify.app"],
     credentials: true,
   })
 );
@@ -125,7 +121,10 @@ app.get("/authenticate", async (req, res) => {
 
 app.get("/logout", async (req, res) => {
   try {
-    res.clearCookie("jwt");
+    res.clearCookie("jwt", {
+      sameSite: "none",
+      secure: true,
+    });
     return res.sendStatus(200);
   } catch {
     return res.sendStatus(403);
