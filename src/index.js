@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
+import { errorHandler } from "./middleware/errorHandler";
 
 import Moralis from "moralis";
 import { EvmChain } from "@moralisweb3/common-evm-utils";
@@ -35,6 +36,15 @@ const messageConfig = {
   uri: process.env.APP_URI,
   timeout: 60,
 };
+
+// gledam kako se napiše custom error
+app.get("/errorTest", (request, response) => {
+  // throw an error with status code of 400
+  let error = new Error(`Glavna poruka greške koja inače sadrži neki kod`);
+  error.name = "IME GRESKE";
+  error.statusCode = 6969; // ts izbaci grešku jer u interface nije ništa drugo definirano. ali mogu ja staviti u objektu šta god želim I guess
+  throw error;
+});
 
 app.get("/", (req, res) => res.send("Hello World, ovaj puta preko browsera!"));
 
@@ -130,6 +140,8 @@ app.get("/logout", async (req, res) => {
     return res.sendStatus(403);
   }
 });
+
+app.use(errorHandler); // po express dokumentaciji ide zadnji. valjda jer je zadnji middleware u stack?
 
 const startServer = async () => {
   await Moralis.start({
