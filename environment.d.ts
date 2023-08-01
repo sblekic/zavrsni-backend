@@ -7,6 +7,7 @@ declare global {
       MORALIS_API_KEY: string;
       APP_URI: string;
       AUTH_SECRET: string;
+      DB_STRING: string;
     }
   }
 }

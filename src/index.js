@@ -7,7 +7,10 @@ import { errorHandler } from "./middleware/errorHandler";
 import Moralis from "moralis";
 
 import authRoutes from "./routes/authRoutes";
+import connect from "./db";
 import storage from "./memory_storage";
+
+import asyncHandler from "express-async-handler";
 
 import { verifyToken } from "./middleware/authHandler";
 
@@ -34,6 +37,16 @@ app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
 app.get("/", (req, res) => res.send("Hello World, ovaj puta preko browsera!"));
+
+app.get(
+  "/db_posts",
+  asyncHandler(async (req, res) => {
+    let db = await connect();
+    let cursor = await db.collection("posts").find();
+    let results = await cursor.toArray();
+    console.log(results);
+  })
+);
 
 // sa verifyToken testiram ako će se pokrenuti sljedeci handler ako nemam jwt
 app.get("/posts", verifyToken, (req, res) => {
