@@ -1,3 +1,7 @@
 node_modules
 .env.*
 !.env.example
+
+cache
+artifacts/*
+!artifacts/contracts
