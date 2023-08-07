@@ -1,74 +1,84 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "./IEventImplementation.sol";
 
-contract EventFactory is ERC721, ERC721URIStorage, Ownable {
+contract EventFactory {
     using Counters for Counters.Counter;
+    Counters.Counter private eventId;
 
-    Counters.Counter public tokenIdCounter;
-    Counters.Counter public eventIdCounter;
+    // svaka instanca beaconProxya pita ovog beacona gdje se nalazi impl ugovor za delegaciju
+    // funkcijskih poziva. Ako upgradeableBeaconu promjenim adresu implementacijskog ugovora,
+    // faktički nadogradim svaki deployani beacon proxy jer svi traže implementaciju ovdje
+    UpgradeableBeacon immutable beacon;
 
-    struct EventData {
-        uint16 price;
-        string name;
+    constructor(address _eventLogic) {
+        //beacon = new ShipBeacon(_initBlueprint);
+        beacon = new UpgradeableBeacon(_eventLogic);
+        // moram prebaciti ownership na sebe kako bih mogao promijeniti adresu beacona (impl contract v2)
+        // ako ovo ne napravim ugovor će biti vlasnik pa neću moći pozvati određene funkcije
+        beacon.transferOwnership(msg.sender);
     }
 
-    mapping(uint256 => EventData) public idToEvent;
+    //vjerojatno dohvacati u fn adresu eventOrganizera tako da ga se moze
+    //postaviti kao owner eventa u eventImplementation ugovor putem transferOwnership
+    //ovo mi je bitno tako da mogu dohvatiti svi eventi registrirani sa strane organizatora (nekakav dash)
+    //tehnički ovaj ugovor kreira proxy i po ownableUpgradeable docs on postaje po defaultu owner (testirano i tocno)
+    function createEvent(
+        IEventImplementation.EventData memory _eventData,
+        string[] memory ticketTypes,
+        uint[] memory supplies,
+        uint[] memory prices
+    ) external returns (address) {
+        eventId.increment();
+        // moram još vidjeti kako će mintanje funkcionirati
+        string memory tokenName = string.concat(
+            "Showstarter Event ",
+            Strings.toString(eventId.current())
+        );
 
-    //pocetak funkcija
-    constructor() ERC721("Showstarter Events", "SHOW") {}
+        bytes memory eventCalldata = abi.encodeWithSignature(
+            "initialize(string,string)",
+            tokenName,
+            "SHOW"
+        );
+        // deploy novog ugovora za event
+        BeaconProxy eventProxy = new BeaconProxy(
+            address(beacon),
+            eventCalldata
+        );
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "http://localhost:3000/";
+        // interface koristim zbog toga što ne moram kodirati funkciju setEventData sa abi.encodeWithSignature. Importiran je interface, dakle ovaj ugovor
+        // zna da postoji funkcija koja se zove setEventdata i očekuje struct. Da nemam importiran interface moram objasniti ovom ugoovoru
+        // da na adresi eventProxy-a (ugovor eventa kojeg sam deploy-a) postoji funkcija za postavljanje event data. To se radi sa low level call,
+        // odnosno na određenu adresu pozivam function selector sa određenim parameterima - abi.encodeWithSignature.abi
+        // razlog zasto ne importirati interface bi bio jedino ako zelim usparati na gas
+
+        IEventImplementation(address(eventProxy)).setEventData(_eventData);
+        IEventImplementation(address(eventProxy)).setTicketData(
+            ticketTypes,
+            supplies,
+            prices
+        );
+
+        emit EventCreated(address(eventProxy));
+        // da li uopce mora ista vracati? ako ne planiram ovaj podatak koristiti u drugom ili u ovom ugovoru, onda ne.
+        // ovdje ono što sam htio postići je bilo dohvaćanje adrese ugovora na frontu. Pravilan način za to postići je emitati event
+        return address(eventProxy);
     }
 
-    function createEvent(EventData calldata _eventData) external {
-        eventIdCounter.increment();
-        EventData memory eventData = _eventData;
-        idToEvent[eventIdCounter.current()] = eventData;
-        console.log("Event created");
-        emit EventCreated(uint256(eventIdCounter.current()));
+    function getEventBeacon() external view returns (address) {
+        return address(beacon.implementation());
     }
 
-    function safeMint(address to, string memory uri) public onlyOwner {
-        uint256 tokenId = tokenIdCounter.current();
-        tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
-    }
-
-    // The following functions are overrides required by Solidity.
-
-    function _burn(
-        uint256 tokenId
-    ) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-    }
-
-    function tokenURI(
-        uint256 tokenId
-    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
-
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC721, ERC721URIStorage) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-
-    // * receive function
     receive() external payable {}
 
     // * fallback function
     fallback() external payable {}
 
-    //event declarations
-
-    event EventCreated(uint256 eventId);
+    event EventCreated(address);
 }
