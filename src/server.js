@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
 import Moralis from "moralis";
+import _ from "lodash";
 
 import authRoutes from "./routes/authRoutes";
 import connect from "./db";
@@ -26,7 +27,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      " http://localhost:4173/",
+      "http://localhost:4173/",
       "https://showstarter.netlify.app",
     ],
     credentials: true,
@@ -35,6 +36,25 @@ app.use(
 app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
+
+app.get("/venues", (req, res) => {
+  let searchTerm = req.query.venue;
+  // if (_.isEmpty(req.query)) {
+  //   console.log("no query");
+  // }
+  console.log(req.query);
+
+  let venues = storage.venues;
+  if (searchTerm) {
+    venues = venues.filter((el) => {
+      // @ts-ignore
+      return el.name.indexOf(searchTerm) >= 0;
+    });
+  }
+
+  res.status(200).send(venues);
+  return;
+});
 
 app.get("/", (req, res) => res.send("Hello World, ovaj puta preko browsera!"));
 

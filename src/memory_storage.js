@@ -22,5 +22,34 @@ let storage = {
       title: "rijeka luka",
     },
   ],
+  venues: [
+    {
+      name: "Tvornica Kulture",
+      capacity: 2200,
+      address: {
+        streetAddress: "Šubićeva ulica 2",
+        city: "Zagreb",
+        postalCode: 10000,
+      },
+    },
+    {
+      name: "Boogaloo",
+      capacity: 1200,
+      address: {
+        streetAddress: "Ulica grada Vukovara 68",
+        city: "Zagreb",
+        postalCode: 10000,
+      },
+    },
+    {
+      name: "Klub Crkva",
+      capacity: 600,
+      address: {
+        streetAddress: "Ružićeva 22",
+        city: "Rijeka",
+        postalCode: 51000,
+      },
+    },
+  ],
 };
 export default storage;
