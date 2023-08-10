@@ -14,6 +14,7 @@ import storage from "./memory_storage";
 import asyncHandler from "express-async-handler";
 
 import { verifyToken } from "./middleware/authHandler";
+import { formatToTitleCase } from "./middleware/formatToTitleCase";
 
 const app = express(); // instanciranje aplikacije
 
@@ -37,12 +38,8 @@ app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
-app.get("/venues", (req, res) => {
-  let searchTerm = req.query.venue;
-  // if (_.isEmpty(req.query)) {
-  //   console.log("no query");
-  // }
-  console.log(req.query);
+app.get("/venues", formatToTitleCase, (req, res) => {
+  let searchTerm = req.query._any;
 
   let venues = storage.venues;
   if (searchTerm) {
@@ -53,6 +50,20 @@ app.get("/venues", (req, res) => {
   }
 
   res.status(200).send(venues);
+  return;
+});
+
+app.get("/artists", formatToTitleCase, (req, res) => {
+  let searchTerm = req.query._any;
+  let artists = storage.artists;
+  if (searchTerm) {
+    artists = artists.filter((el) => {
+      // @ts-ignore
+      return el.name.indexOf(searchTerm) >= 0;
+    });
+  }
+
+  res.status(200).send(artists);
   return;
 });
 
