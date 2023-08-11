@@ -38,34 +38,67 @@ app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
-app.get("/venues", formatToTitleCase, (req, res) => {
-  let searchTerm = req.query._any;
+app.post(
+  "/events",
+  asyncHandler(async (req, res) => {
+    let db = await connect();
+    let event = req.body;
+    let result = await db.collection("events").insertOne(event);
+    console.log(result);
 
-  let venues = storage.venues;
-  if (searchTerm) {
-    venues = venues.filter((el) => {
+    if (result.acknowledged == true) {
+      res.json({
+        status: "success, respect ➕",
+        id: result.insertedId,
+      });
+    } else {
+      res.json({
+        status: "mission failed",
+      });
+    }
+  })
+);
+
+app.get(
+  "/venues",
+  formatToTitleCase,
+  asyncHandler(async (req, res) => {
+    let query = req.query;
+    let filter = {};
+
+    if (query._any) {
       // @ts-ignore
-      return el.name.indexOf(searchTerm) >= 0;
-    });
-  }
+      filter["name"] = new RegExp(query._any);
+    }
 
-  res.status(200).send(venues);
-  return;
-});
+    let db = await connect();
+    let cursor = await db.collection("venues").find(filter);
+    let venues = await cursor.toArray();
+    res.status(200).send(venues);
+    return;
+  })
+);
 
-app.get("/artists", formatToTitleCase, (req, res) => {
-  let searchTerm = req.query._any;
-  let artists = storage.artists;
-  if (searchTerm) {
-    artists = artists.filter((el) => {
+app.get(
+  "/artists",
+  formatToTitleCase,
+  asyncHandler(async (req, res) => {
+    let query = req.query;
+    let filter = {};
+
+    if (query._any) {
       // @ts-ignore
-      return el.name.indexOf(searchTerm) >= 0;
-    });
-  }
+      filter["name"] = new RegExp(query._any);
+    }
 
-  res.status(200).send(artists);
-  return;
-});
+    let db = await connect();
+    let cursor = await db.collection("artists").find(filter);
+    let artists = await cursor.toArray();
+
+    res.status(200).send(artists);
+    return;
+  })
+);
 
 app.get("/", (req, res) => res.send("Hello World, ovaj puta preko browsera!"));
 

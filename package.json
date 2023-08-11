@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon --exec babel-node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cross-env NODE_ENV=production babel-node src/server.js"
+    "build": "cross-env NODE_ENV=production babel-node src/server.js",
+    "populateDb": "cross-env NODE_ENV=development babel-node src/populateDb.js"
   },
   "author": "Sandi Blekic",
   "license": "ISC",

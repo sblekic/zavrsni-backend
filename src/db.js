@@ -20,12 +20,12 @@ export default async () => {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
       // Send a ping to confirm a successful connection to the selected db
-      await client.db("fipugram").command({ ping: 1 });
+      await client.db("showStarter").command({ ping: 1 });
       console.log(
         "Pinged your deployment. You successfully connected to MongoDB!"
       );
       // navedem koji db želim koristiti
-      db = client.db("fipugram");
+      db = client.db("showStarter");
       return db;
     } catch (err) {
       throw new Error("Spajanje na bazu nije uspjelo: " + err);
