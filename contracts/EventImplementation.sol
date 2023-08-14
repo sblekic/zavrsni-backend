@@ -56,11 +56,33 @@ contract EventImplementation is
         }
     }
 
-    function safeMint(address to) public onlyOwner {
-        uint256 tokenId = _tokenIdCounter.current();
+    function safeMint(address to) public {
         _tokenIdCounter.increment();
+        uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
     }
+
+    function _baseURI() internal view override returns (string memory) {
+        string memory base = "https://showstarter.netlify.app/tickets/";
+        string memory proxyAddress = StringsUpgradeable.toHexString(
+            address(this)
+        );
+
+        return string(abi.encodePacked(base, proxyAddress, "/"));
+    }
+
+    function buyTicket(string calldata ticketType) external payable {
+        require(tickets[ticketType].supply > 0, "Tickets are sold out");
+        require(
+            msg.value == tickets[ticketType].price,
+            "Not enough ether to pay for the ticket"
+        );
+        safeMint(msg.sender);
+        tickets[ticketType].supply--;
+        emit TicketSale(address(this), _tokenIdCounter.current());
+    }
+
+    event TicketSale(address, uint256);
 
     receive() external payable {}
 

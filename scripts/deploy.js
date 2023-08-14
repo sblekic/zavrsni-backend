@@ -23,26 +23,67 @@ async function main() {
   ]);
   await eventFactory.waitForDeployment();
   const factoryAddress = await eventFactory.getAddress();
-  console.log(`Contract EventFactory deployed at address ${factoryAddress}`);
+  console.log(`Contract EventFactory deployed at address: ${factoryAddress}`);
 
   saveAbiFrontend(factoryAddress, "EventFactory");
 
+  // ovo su testovi, bilo bi pametnije koristiti alate koje hh nudi ali eto, I live a dangerous life
+
   // console.log(eventFactory.interface.fragments);
-  await eventFactory.createEvent(
-    ["prodigy", 1694368800, 1694379600],
+  let eventTx = await eventFactory.createEvent(
+    ["The Prodigy u Tvornici Kulture", 1694368800, 1694379600],
     ["GA", "VIP"],
+    // kolicina ulaznica po kategoriji
     [500, 100],
-    [55, 140]
+    //cijena ulaznica u wei
+    [35503483779348000n, 88758709448370000n]
+  );
+
+  let eventReceipt = await eventTx.wait();
+
+  let [proxyAddr] = eventReceipt.logs[3].args;
+  console.log("BeaconProxy deployed at address:", proxyAddr);
+
+  saveAbiFrontend(proxyAddr, "EventImplementation");
+
+  // mijenjaj ovisno ako se radi hre node ili ganache
+  let signer = await hre.ethers.getSigner(
+    "0x5D9b9cC9Ba98881F5DEfAE78263283E79FFdC449"
+  );
+
+  let eventInstance = await hre.ethers.getContractAt(
+    "EventImplementation",
+    proxyAddr,
+    signer
+  );
+
+  let buyTicketTx = await eventInstance.buyTicket("GA", {
+    value: hre.ethers.parseEther("0.035503483779348"),
+  });
+
+  let buyTicketReceipt = await buyTicketTx.wait();
+
+  console.log(
+    "tokenURI funkcija vraća endpoint:",
+    await eventInstance.tokenURI(1)
+  );
+
+  // console.log(await eventInstance.ownerOf(1));
+  let ticketData = await eventInstance.tickets("GA");
+  console.log(
+    "Struct Ticket za ovaj ugovor ima sljedeće vrijednosti: ",
+    ticketData
   );
 }
 
+// helper funkcija koja mi sprema abi ugovora po želji na frontendu
 function saveAbiFrontend(contractAddress, fileName) {
   const factoryAbi = {
     contractAddress,
   };
   factoryAbi.abi = hre.artifacts.readArtifactSync("EventFactory").abi;
 
-  console.log(factoryAbi);
+  // console.log(factoryAbi);
   const abiDir = process.env.FRONTEND_DIR;
 
   // @ts-ignore

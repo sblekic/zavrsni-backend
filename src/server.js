@@ -44,7 +44,6 @@ app.post(
     let db = await connect();
     let event = req.body;
     let result = await db.collection("events").insertOne(event);
-    console.log(result);
 
     if (result.acknowledged == true) {
       res.json({
