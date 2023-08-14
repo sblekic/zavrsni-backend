@@ -81,7 +81,7 @@ function saveAbiFrontend(contractAddress, fileName) {
   const factoryAbi = {
     contractAddress,
   };
-  factoryAbi.abi = hre.artifacts.readArtifactSync("EventFactory").abi;
+  factoryAbi.abi = hre.artifacts.readArtifactSync(fileName).abi;
 
   // console.log(factoryAbi);
   const abiDir = process.env.FRONTEND_DIR;

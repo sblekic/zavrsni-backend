@@ -39,6 +39,17 @@ app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
 app.post(
+  "/tickets",
+  asyncHandler(async (req, res) => {
+    let db = await connect();
+    let ticket = req.body;
+
+    console.log(ticket);
+    res.status(200).json({ res: "ok" });
+  })
+);
+
+app.post(
   "/events",
   asyncHandler(async (req, res) => {
     let db = await connect();
@@ -51,7 +62,7 @@ app.post(
         id: result.insertedId,
       });
     } else {
-      res.json({
+      res.status(500).json({
         status: "mission failed",
       });
     }
