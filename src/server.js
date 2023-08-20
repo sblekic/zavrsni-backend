@@ -49,11 +49,36 @@ app.post(
   })
 );
 
+app.get(
+  "/events",
+  asyncHandler(async (req, res) => {
+    console.log("get all events route");
+    let db = await connect();
+    let cursor = await db.collection("events").find();
+    let result = await cursor.toArray();
+    res.send(result);
+  })
+);
+
+app.get(
+  "/events/:id",
+  asyncHandler(async (req, res) => {
+    console.log("event by id route");
+    let filter = {
+      ethEventAddress: req.params.id,
+    };
+    let db = await connect();
+    let result = await db.collection("events").findOne(filter);
+    res.send(result);
+  })
+);
+
 app.post(
   "/events",
   asyncHandler(async (req, res) => {
     let db = await connect();
     let event = req.body;
+    console.log("posting event:", event);
     let result = await db.collection("events").insertOne(event);
 
     if (result.acknowledged == true) {

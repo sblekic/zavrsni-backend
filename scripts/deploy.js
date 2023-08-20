@@ -74,6 +74,8 @@ async function main() {
     "Struct Ticket za ovaj ugovor ima sljedeće vrijednosti: ",
     ticketData
   );
+
+  console.log(await eventFactory.getEventBeacon());
 }
 
 // helper funkcija koja mi sprema abi ugovora po želji na frontendu
