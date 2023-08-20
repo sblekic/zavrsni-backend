@@ -42,10 +42,36 @@ app.post(
   "/tickets",
   asyncHandler(async (req, res) => {
     let db = await connect();
-    let ticket = req.body;
+    let ticketMeta = req.body;
 
-    console.log(ticket);
-    res.status(200).json({ res: "ok" });
+    console.log("posting ticket metadata", ticketMeta);
+
+    let result = await db.collection("tickets").insertOne(ticketMeta);
+
+    if (result.acknowledged == true) {
+      res.json({
+        status: "success, respect ➕",
+        id: result.insertedId,
+      });
+    } else {
+      res.status(500).json({
+        status: "mission failed",
+      });
+    }
+  })
+);
+
+app.get(
+  "/tickets/:userId",
+  asyncHandler(async (req, res) => {
+    console.log("get user tickets");
+    let filter = {
+      owner: req.params.userId,
+    };
+    let db = await connect();
+    let cursor = await db.collection("tickets").find(filter);
+    let result = await cursor.toArray();
+    res.send(result);
   })
 );
 
