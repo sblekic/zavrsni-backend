@@ -16,6 +16,8 @@ import asyncHandler from "express-async-handler";
 import { verifyToken } from "./middleware/authHandler";
 import { formatToTitleCase } from "./middleware/formatToTitleCase";
 
+import { ObjectId } from "mongodb";
+
 const app = express(); // instanciranje aplikacije
 
 // iz https://stackoverflow.com/questions/18864677/what-is-process-env-port-in-node-js
@@ -30,6 +32,7 @@ app.use(
       "http://localhost:5173",
       "http://localhost:4173/",
       "https://showstarter.netlify.app",
+      "http://192.168.1.103:5173",
     ],
     credentials: true,
   })
@@ -61,10 +64,33 @@ app.post(
   })
 );
 
+// skeniranje ulaznica
+app.patch(
+  "/tickets/:id",
+  asyncHandler(async (req, res) => {
+    console.log("scan ticket", req.params.id);
+    let filter = {
+      _id: new ObjectId(req.params.id),
+    };
+
+    let updateDoc = {
+      $set: {
+        isScanned: true,
+      },
+    };
+    let db = await connect();
+
+    let result = await db.collection("tickets").updateOne(filter, updateDoc);
+    console.log("rezultat db transakcije", result);
+    res.send(result);
+  })
+);
+
+// vraca sve ulaznice određenog korisnika.
 app.get(
   "/tickets/:userId",
   asyncHandler(async (req, res) => {
-    console.log("get user tickets");
+    console.log("get user tickets", req.params.userId);
     let filter = {
       owner: req.params.userId,
     };
