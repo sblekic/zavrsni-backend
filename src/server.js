@@ -103,9 +103,35 @@ app.get(
 
 app.get(
   "/events",
+  formatToTitleCase,
   asyncHandler(async (req, res) => {
     console.log("get all events route");
+    let query = req.query;
     let db = await connect();
+
+    let artistFilter = {};
+    let venueFilter = {};
+
+    if (query._any) {
+      // @ts-ignore
+      artistFilter["lineup.name"] = new RegExp(query._any);
+      // @ts-ignore
+      venueFilter["venue.city"] = new RegExp(query._any);
+
+      let search = await db
+        .collection("events")
+        .find({ $or: [artistFilter, venueFilter] });
+      search = await search.toArray();
+      search = search.map((doc) => {
+        return {
+          id: doc.ethEventAddress,
+          name: doc.name,
+        };
+      });
+      res.send(search);
+      return;
+    }
+    console.log("provjera ako return radi");
     let cursor = await db.collection("events").find();
     let result = await cursor.toArray();
     res.send(result);

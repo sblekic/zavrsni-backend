@@ -6,38 +6,9 @@ import implementationArtifact from "../artifacts/contracts/EventImplementation.s
 import data from "./dataToLoad";
 
 async function main() {
-  await insertEvent();
-}
+  const provider = new ethers.JsonRpcProvider("HTTP://192.168.1.102:7545");
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
-
-async function insertEvent() {
-  async function insertEventDb(proxyId) {
-    const db = await connect();
-    data.dbEvents[0].ethEventAddress = proxyId;
-    try {
-      let result = await db.collection("events").insertOne(data.dbEvents[0]);
-      console.log(result);
-    } catch (error) {}
-  }
-
-  const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");
-  let newEventListener = await provider.on(
-    {
-      topics: [`${ethers.id("EventCreated(address)")}`],
-    },
-    async (proxyId) => {
-      console.log(
-        "event deployed at beaconProxy: ",
-        ethers.stripZerosLeft(proxyId.data)
-      );
-      await insertEventDb(ethers.stripZerosLeft(proxyId.data));
-    }
-  );
-
+  // kreacija "walleta"
   const signingKey = new ethers.SigningKey(
     "0x79ed68cf5f6e968c1103aab5fa132d414fc1be328ffe71662067dbca2498e989"
   );
@@ -50,17 +21,60 @@ async function insertEvent() {
     signer
   );
 
+  let i = 0;
+
+  let newEventListener = await provider.on(
+    {
+      topics: [`${ethers.id("EventCreated(address)")}`],
+    },
+    async (proxyId) => {
+      console.log(
+        "event deployed at beaconProxy: ",
+        ethers.stripZerosLeft(proxyId.data)
+      );
+      await insertEventDb(ethers.stripZerosLeft(proxyId.data), i);
+      i++;
+      if (i < data.ethEvents.length) {
+        await insertEvent(eventFactory, i);
+      }
+    }
+  );
+
+  await insertArtists();
+  await insertVenues();
+
+  await insertEvent(eventFactory, i);
+  return;
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+async function insertEventDb(proxyId, eventIndex) {
+  const db = await connect();
+  data.dbEvents[eventIndex].ethEventAddress = proxyId;
+  try {
+    let result = await db
+      .collection("events")
+      .insertOne(data.dbEvents[eventIndex]);
+    console.log(result);
+  } catch (error) {}
+}
+
+async function insertEvent(eventFactory, eventIndex) {
   const eventData = {
-    name: data.ethEvents[0].name,
-    start: data.ethEvents[0].start,
-    end: data.ethEvents[0].end,
+    name: data.ethEvents[eventIndex].name,
+    start: data.ethEvents[eventIndex].start,
+    end: data.ethEvents[eventIndex].end,
   };
 
   let eventTx = await eventFactory.createEvent(
     eventData,
-    data.ethEvents[0].ticketTypes,
-    data.ethEvents[0].ticketSupplies,
-    data.ethEvents[0].ticketPrices
+    data.ethEvents[eventIndex].ticketTypes,
+    data.ethEvents[eventIndex].ticketSupplies,
+    data.ethEvents[eventIndex].ticketPrices
   );
 
   let eventReceipt = await eventTx.wait();
@@ -86,20 +100,28 @@ async function insertArtists() {
 
     const docs = [
       {
-        address: "0x732f28c7915589F769434CE6a18F680AE113612D",
-        name: "The Prodigy",
+        address: "0x732f28c7915589f769434ce6a18f680ae113612d",
+        name: "Nipplepeople",
       },
       {
-        address: "0x4805015544C948D007CE269C09efb04377Faf92F",
+        address: "0x4805015544c948d007ce269c09efb04377faf92f",
+        name: "Rage Against The Machine",
+      },
+      {
+        address: "0x149a8a0492a7df89c064c78cdf301806cda2687e",
+        name: "Eros Ramazzotti",
+      },
+      {
+        address: "0xb2591fd0cef325fa4ddedc0a905a8b7977e40fd8",
+        name: "Imagine Dragons",
+      },
+      {
+        address: "0xae52e68a9583823add0a064bb12a05fee1be742c",
         name: "Bullet For My Valentine",
       },
       {
-        address: "0x149A8a0492a7DF89c064c78CdF301806CDA2687E",
-        name: "Harry Styles",
-      },
-      {
-        address: "0xb2591fD0cEF325fa4DdEDc0A905A8B7977e40FD8",
-        name: "Imagine Dragons",
+        address: "0x6ffebdcdd84246231d2a83e819b8fb54791064e7",
+        name: "Jinjer",
       },
     ];
 
@@ -107,6 +129,72 @@ async function insertArtists() {
     const options = { ordered: true };
 
     const result = await artists.insertMany(docs, options);
+
+    console.log(`${result.insertedCount} documents were inserted`);
+  } catch (error) {
+    console.dir(error);
+  }
+}
+
+async function insertVenues() {
+  try {
+    const db = await connect();
+    const venues = db.collection("venues");
+
+    // create an array of documents to insert
+
+    const docs = [
+      {
+        name: "Tvornica Kulture",
+        capacity: 2200,
+        address: {
+          streetAddress: "Šubićeva ulica 2",
+          city: "Zagreb",
+          postalCode: 10000,
+        },
+      },
+      {
+        name: "Pogon Kulture",
+        capacity: 600,
+        address: {
+          streetAddress: "Strossmayerova 1",
+          city: "Rijeka",
+          postalCode: 51000,
+        },
+      },
+      {
+        name: "Klub Crkva",
+        capacity: 600,
+        address: {
+          streetAddress: "Ružićeva 22",
+          city: "Rijeka",
+          postalCode: 51000,
+        },
+      },
+      {
+        name: "Arena Zagreb",
+        capacity: 24000,
+        address: {
+          streetAddress: "Ul. Vice Vukova 8",
+          city: "Zagreb",
+          postalCode: 10000,
+        },
+      },
+      {
+        name: "Arena Pula",
+        capacity: 25000,
+        address: {
+          streetAddress: "Flavijevska ulica",
+          city: "Pula",
+          postalCode: 52100,
+        },
+      },
+    ];
+
+    // this option prevents additional documents from being inserted if one fails
+    const options = { ordered: true };
+
+    const result = await venues.insertMany(docs, options);
 
     console.log(`${result.insertedCount} documents were inserted`);
   } catch (error) {

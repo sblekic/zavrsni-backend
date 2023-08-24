@@ -1,7 +1,8 @@
 export const formatToTitleCase = (req, res, next) => {
   let str = req.query._any;
   if (!str) {
-    return "";
+    console.log("nema query string");
+    return next();
   }
 
   req.query._any = str
