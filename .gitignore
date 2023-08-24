@@ -6,4 +6,5 @@ cache
 artifacts/*
 !artifacts/contracts
 
-scripts/test.js
+scripts/*
+!scripts/deploy.js

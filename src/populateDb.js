@@ -3,7 +3,7 @@ import connect from "./db";
 import { ethers } from "ethers";
 import factoryArtifact from "../artifacts/contracts/EventFactory.sol/EventFactory.json";
 import implementationArtifact from "../artifacts/contracts/EventImplementation.sol/EventImplementation.json";
-import data from "./dataToLoad";
+import data from "./polygonData";
 
 async function main() {
   const provider = new ethers.JsonRpcProvider("HTTP://192.168.1.102:7545");
@@ -15,8 +15,8 @@ async function main() {
   const signer = new ethers.BaseWallet(signingKey, provider);
 
   const eventFactory = new ethers.Contract(
-    // treba dodati adresu ugovora u artifacts
-    "0xd49B6f81F4e16b22c872E9aA9B0a28cAD9bb8aAA",
+    // treba dodati adresu ugovora u artifacts, ovo mijenjas svaki put kada se ugovor kompajlira
+    "0xa89f48A7c391DACE53d800CbFC66801740FfC56E",
     factoryArtifact.abi,
     signer
   );
@@ -36,12 +36,14 @@ async function main() {
       i++;
       if (i < data.ethEvents.length) {
         await insertEvent(eventFactory, i);
+      } else {
+        console.log("it is done");
       }
     }
   );
 
-  await insertArtists();
-  await insertVenues();
+  // await insertArtists();
+  // await insertVenues();
 
   await insertEvent(eventFactory, i);
   return;

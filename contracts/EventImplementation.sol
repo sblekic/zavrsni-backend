@@ -56,7 +56,7 @@ contract EventImplementation is
         }
     }
 
-    function safeMint(address to) public {
+    function safeMint(address to) internal {
         _tokenIdCounter.increment();
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
