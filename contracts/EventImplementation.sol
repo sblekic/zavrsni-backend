@@ -6,12 +6,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+// ugovor potreban za transfer tokena na samom ugovoru
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 
 import "./IEventImplementation.sol";
 
 contract EventImplementation is
     Initializable,
     ERC721Upgradeable,
+    ERC721HolderUpgradeable,
     OwnableUpgradeable,
     IEventImplementation
 {
@@ -20,6 +23,8 @@ contract EventImplementation is
 
     EventData public eventData;
     mapping(string => Ticket) public tickets;
+    // vrati na private kad si gotov
+    mapping(uint256 => ListedTicket) public idToListedTicket;
 
     // Locking implementation contract after deployment in order to protect it from attacks
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -72,17 +77,34 @@ contract EventImplementation is
     }
 
     function buyTicket(string calldata ticketType) external payable {
-        require(tickets[ticketType].supply > 0, "Tickets are sold out");
+        require(tickets[ticketType].supply > 0, "Ulaznice su rasprodane");
         require(
             msg.value == tickets[ticketType].price,
-            "Not enough ether to pay for the ticket"
+            "Nedovoljan iznos za kupnju ulaznice"
         );
         safeMint(msg.sender);
         tickets[ticketType].supply--;
         emit TicketSale(address(this), _tokenIdCounter.current());
     }
 
-    event TicketSale(address, uint256);
+    //dodaj ticketType kao param kako bis mogao ograničiti cijenu preprodaje
+    function sellTicket(
+        uint256 tokenId,
+        uint256 resellPrice,
+        string calldata ticketType
+    ) external {
+        require(
+            resellPrice <= tickets[ticketType].price,
+            "Cijena preprodaje ne smije biti veca od originalne cijene ulaznice"
+        );
+        idToListedTicket[tokenId] = ListedTicket(
+            tokenId,
+            payable(msg.sender),
+            resellPrice
+        );
+        safeTransferFrom(msg.sender, address(this), tokenId);
+        emit ListedTicketSuccess(tokenId);
+    }
 
     receive() external payable {}
 

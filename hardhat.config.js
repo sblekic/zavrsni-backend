@@ -8,7 +8,7 @@ module.exports = {
   defaultNetwork: "ganache",
   networks: {
     ganache: {
-      url: "HTTP://192.168.1.102:7545",
+      url: "HTTP://192.168.1.103:7545",
     },
     mumbai: {
       url: process.env.API_URL,

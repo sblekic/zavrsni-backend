@@ -13,6 +13,12 @@ interface IEventImplementation {
         uint price;
     }
 
+    struct ListedTicket {
+        uint256 tokenId;
+        address payable seller;
+        uint256 price;
+    }
+
     function setEventData(EventData memory _eventData) external;
 
     function setTicketData(
@@ -20,4 +26,8 @@ interface IEventImplementation {
         uint[] memory supplies,
         uint[] memory prices
     ) external;
+
+    event TicketSale(address, uint256);
+
+    event ListedTicketSuccess(uint256 tokenId);
 }

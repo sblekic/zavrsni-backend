@@ -41,6 +41,35 @@ app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
+app.get(
+  "/tickets",
+  asyncHandler(async (req, res) => {
+    console.log("get listed tickets");
+    let filter = {
+      isListed: true,
+    };
+    let db = await connect();
+    let cursor = await db.collection("tickets").find(filter);
+    let result = await cursor.toArray();
+    res.send(result);
+  })
+);
+
+// vraca sve ulaznice određenog korisnika.
+app.get(
+  "/tickets/:userId",
+  asyncHandler(async (req, res) => {
+    console.log("get user tickets", req.params.userId);
+    let filter = {
+      owner: req.params.userId,
+    };
+    let db = await connect();
+    let cursor = await db.collection("tickets").find(filter);
+    let result = await cursor.toArray();
+    res.send(result);
+  })
+);
+
 app.post(
   "/tickets",
   asyncHandler(async (req, res) => {
@@ -48,6 +77,9 @@ app.post(
     let ticketMeta = req.body;
 
     console.log("posting ticket metadata", ticketMeta);
+
+    ticketMeta.isScanned = false;
+    ticketMeta.isListed = false;
 
     let result = await db.collection("tickets").insertOne(ticketMeta);
 
@@ -64,7 +96,7 @@ app.post(
   })
 );
 
-// skeniranje ulaznica
+// skeniranje i preprodaja ulaznica
 app.patch(
   "/tickets/:id",
   asyncHandler(async (req, res) => {
@@ -72,31 +104,14 @@ app.patch(
     let filter = {
       _id: new ObjectId(req.params.id),
     };
-
+    let properties = req.body;
     let updateDoc = {
-      $set: {
-        isScanned: true,
-      },
+      $set: properties,
     };
     let db = await connect();
 
     let result = await db.collection("tickets").updateOne(filter, updateDoc);
     console.log("rezultat db transakcije", result);
-    res.send(result);
-  })
-);
-
-// vraca sve ulaznice određenog korisnika.
-app.get(
-  "/tickets/:userId",
-  asyncHandler(async (req, res) => {
-    console.log("get user tickets", req.params.userId);
-    let filter = {
-      owner: req.params.userId,
-    };
-    let db = await connect();
-    let cursor = await db.collection("tickets").find(filter);
-    let result = await cursor.toArray();
     res.send(result);
   })
 );

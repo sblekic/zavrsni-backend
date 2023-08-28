@@ -6,7 +6,10 @@ import implementationArtifact from "../artifacts/contracts/EventImplementation.s
 import data from "./polygonData";
 
 async function main() {
-  const provider = new ethers.JsonRpcProvider("HTTP://192.168.1.102:7545");
+  const db = await connect();
+
+  // mijenjaj ovisno o provideru; dev vs prod
+  const provider = new ethers.JsonRpcProvider("HTTP://192.168.1.103:7545");
 
   // kreacija "walleta"
   const signingKey = new ethers.SigningKey(
@@ -16,7 +19,7 @@ async function main() {
 
   const eventFactory = new ethers.Contract(
     // treba dodati adresu ugovora u artifacts, ovo mijenjas svaki put kada se ugovor kompajlira
-    "0xa89f48A7c391DACE53d800CbFC66801740FfC56E",
+    "0x3006Ca792dEa7BC86E770A3E732088627Df72b07",
     factoryArtifact.abi,
     signer
   );
@@ -32,12 +35,14 @@ async function main() {
         "event deployed at beaconProxy: ",
         ethers.stripZerosLeft(proxyId.data)
       );
-      await insertEventDb(ethers.stripZerosLeft(proxyId.data), i);
+      await insertEventDb(ethers.stripZerosLeft(proxyId.data), i, db);
       i++;
       if (i < data.ethEvents.length) {
         await insertEvent(eventFactory, i);
       } else {
         console.log("it is done");
+        // db konekcija ostaje otvorena pa izađem is scripta ovako jer mi se ne da modificirati db.js
+        process.exit();
       }
     }
   );
@@ -54,8 +59,7 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 
-async function insertEventDb(proxyId, eventIndex) {
-  const db = await connect();
+async function insertEventDb(proxyId, eventIndex, db) {
   data.dbEvents[eventIndex].ethEventAddress = proxyId;
   try {
     let result = await db

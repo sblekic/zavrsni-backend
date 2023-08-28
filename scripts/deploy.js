@@ -26,6 +26,7 @@ async function main() {
   console.log(`Contract EventFactory deployed at address: ${factoryAddress}`);
 
   saveAbiFrontend(factoryAddress, "EventFactory");
+  saveAbiFrontend(implementationAddress, "EventImplementation");
 
   // ovo su testovi, bilo bi pametnije koristiti alate koje hh nudi ali eto, I live a dangerous life
 
@@ -43,8 +44,6 @@ async function main() {
 
   // let [proxyAddr] = eventReceipt.logs[3].args;
   // console.log("BeaconProxy deployed at address:", proxyAddr);
-
-  // saveAbiFrontend(proxyAddr, "EventImplementation");
 
   // // mijenjaj ovisno ako se radi hre node ili ganache
   // let signer = await hre.ethers.getSigner(
