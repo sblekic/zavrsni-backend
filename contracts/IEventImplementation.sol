@@ -17,6 +17,7 @@ interface IEventImplementation {
         uint256 tokenId;
         address payable seller;
         uint256 price;
+        bool isListed;
     }
 
     function setEventData(EventData memory _eventData) external;
@@ -29,5 +30,7 @@ interface IEventImplementation {
 
     event TicketSale(address, uint256);
 
-    event ListedTicketSuccess(uint256 tokenId);
+    event ListedTicketSuccess(uint256);
+
+    event SecondarySale(uint256);
 }

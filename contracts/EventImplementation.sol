@@ -45,7 +45,7 @@ contract EventImplementation is
         );
     }
 
-    function setEventData(EventData calldata _eventData) external {
+    function setEventData(EventData memory _eventData) external {
         // ocito mogu samo assign struct na struct jer su istog tipa?
         eventData = _eventData;
         console.log("usao u setEventData");
@@ -76,7 +76,7 @@ contract EventImplementation is
         return string(abi.encodePacked(base, proxyAddress, "/"));
     }
 
-    function buyTicket(string calldata ticketType) external payable {
+    function buyTicket(string memory ticketType) external payable {
         require(tickets[ticketType].supply > 0, "Ulaznice su rasprodane");
         require(
             msg.value == tickets[ticketType].price,
@@ -87,11 +87,10 @@ contract EventImplementation is
         emit TicketSale(address(this), _tokenIdCounter.current());
     }
 
-    //dodaj ticketType kao param kako bis mogao ograničiti cijenu preprodaje
     function sellTicket(
         uint256 tokenId,
         uint256 resellPrice,
-        string calldata ticketType
+        string memory ticketType
     ) external {
         require(
             resellPrice <= tickets[ticketType].price,
@@ -100,10 +99,28 @@ contract EventImplementation is
         idToListedTicket[tokenId] = ListedTicket(
             tokenId,
             payable(msg.sender),
-            resellPrice
+            resellPrice,
+            true
         );
+        // transfer na ugovoru za preprodaju
         safeTransferFrom(msg.sender, address(this), tokenId);
         emit ListedTicketSuccess(tokenId);
+    }
+
+    function secondarySale(uint256 tokenId) external payable {
+        require(
+            msg.value == idToListedTicket[tokenId].price,
+            "Nedovoljan iznos za kupnju ulaznice"
+        );
+        require(idToListedTicket[tokenId].isListed, "Ulaznica nije u prodaji");
+        // vlasnik nft-a mora pozvati safeTransfer
+        ERC721Upgradeable(address(this)).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
+        idToListedTicket[tokenId].isListed = false;
+        emit SecondarySale(tokenId);
     }
 
     receive() external payable {}

@@ -41,20 +41,6 @@ app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
-app.get(
-  "/tickets",
-  asyncHandler(async (req, res) => {
-    console.log("get listed tickets");
-    let filter = {
-      isListed: true,
-    };
-    let db = await connect();
-    let cursor = await db.collection("tickets").find(filter);
-    let result = await cursor.toArray();
-    res.send(result);
-  })
-);
-
 // vraca sve ulaznice određenog korisnika.
 app.get(
   "/tickets/:userId",
@@ -70,6 +56,25 @@ app.get(
   })
 );
 
+// ulaznice koje su u preprodaji
+app.get(
+  "/tickets/event/:eventId",
+  asyncHandler(async (req, res) => {
+    console.log("get listed tickets");
+    let filter = {
+      isListed: true,
+    };
+    let eventId = req.params.eventId;
+    let db = await connect();
+    let cursor = await db
+      .collection("tickets")
+      .find({ $and: [{ isListed: true }, { eventAddress: eventId }] });
+    let result = await cursor.toArray();
+    res.send(result);
+  })
+);
+
+// prodaja ulaznice = kreacija metapodataka
 app.post(
   "/tickets",
   asyncHandler(async (req, res) => {
@@ -82,6 +87,17 @@ app.post(
     ticketMeta.isListed = false;
 
     let result = await db.collection("tickets").insertOne(ticketMeta);
+
+    // decrease ticketSupply number only if greater than zero
+    let supplyChange = await db.collection("events").updateOne(
+      {
+        ethEventAddress: ticketMeta.eventAddress,
+        "tickets.supply": { $gt: 0 },
+      },
+      { $inc: { "tickets.$[ticket].supply": -1 } },
+      { arrayFilters: [{ "ticket.type": `${ticketMeta.type}` }] }
+    );
+    console.log(supplyChange);
 
     if (result.acknowledged == true) {
       res.json({

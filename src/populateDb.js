@@ -19,7 +19,7 @@ async function main() {
 
   const eventFactory = new ethers.Contract(
     // treba dodati adresu ugovora u artifacts, ovo mijenjas svaki put kada se ugovor kompajlira
-    "0x3006Ca792dEa7BC86E770A3E732088627Df72b07",
+    "0xEbac03af611131Cdaeaf9C53d029d5b4C57DD39a",
     factoryArtifact.abi,
     signer
   );

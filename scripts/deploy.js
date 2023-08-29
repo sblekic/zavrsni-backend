@@ -32,12 +32,12 @@ async function main() {
 
   // // console.log(eventFactory.interface.fragments);
   // let eventTx = await eventFactory.createEvent(
-  //   ["The Prodigy u Tvornici Kulture", 1694368800, 1694379600],
-  //   ["GA", "VIP"],
-  //   // kolicina ulaznica po kategoriji
-  //   [500, 100],
-  //   //cijena ulaznica u wei
-  //   [35503483779348000n, 88758709448370000n]
+  // ["The Prodigy u Tvornici Kulture", 1694368800, 1694379600],
+  // ["GA", "VIP"],
+  // // kolicina ulaznica po kategoriji
+  // [500, 100],
+  // //cijena ulaznica u wei
+  // [35503483779348000n, 88758709448370000n]
   // );
 
   // let eventReceipt = await eventTx.wait();
