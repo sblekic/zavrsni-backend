@@ -32,7 +32,6 @@ app.use(
       "http://localhost:5173",
       "http://localhost:4173/",
       "https://showstarter.netlify.app",
-      "http://192.168.1.103:5173",
     ],
     credentials: true,
   })
