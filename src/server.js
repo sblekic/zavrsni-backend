@@ -160,10 +160,11 @@ app.get(
         };
       });
       res.send(search);
+      // return sam stavio kako se ruta ne bi izvrsila do kraja
       return;
     }
-    console.log("provjera ako return radi");
-    let cursor = await db.collection("events").find();
+
+    let cursor = await db.collection("events").find().sort({ startTime: 1 });
     let result = await cursor.toArray();
     res.send(result);
   })
