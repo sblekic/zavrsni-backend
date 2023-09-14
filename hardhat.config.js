@@ -1,7 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
 
-require("dotenv").config({ path: `.env.development` });
+// require("dotenv").config({ path: `.env.development` });
+require("dotenv").config({ path: `.env.production` });
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

@@ -39,6 +39,20 @@ app.use(express.json()); // automatsko dekodiranje JSON poruku
 app.use(bodyParser.json()); // req.body je undefined bez ovoga
 app.use(cookieParser());
 
+app.get(
+  "/tickets/:eventId/:tokenId",
+  asyncHandler(async (req, res) => {
+    console.log(req.params.eventId, req.params.tokenId);
+    const eventId = req.params.eventId;
+    const tokenId = req.params.tokenId;
+    let db = await connect();
+    let result = await db.collection("tickets").findOne({
+      $and: [{ eventAddress: eventId }, { tokenId: parseInt(tokenId) }],
+    });
+    res.send(result);
+  })
+);
+
 // vraca sve ulaznice određenog korisnika.
 app.get(
   "/tickets/:userId",

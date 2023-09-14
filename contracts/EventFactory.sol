@@ -11,15 +11,10 @@ contract EventFactory {
     using Counters for Counters.Counter;
     Counters.Counter private eventId;
 
-    // svaka instanca beaconProxya pita ovog beacona gdje se nalazi impl ugovor za delegaciju
-    // funkcijskih poziva. Ako upgradeableBeaconu promjenim adresu implementacijskog ugovora,
-    // faktički nadogradim svaki deployani beacon proxy jer svi traže implementaciju ovdje
     UpgradeableBeacon immutable beacon;
 
     constructor(address _eventLogic) {
         beacon = new UpgradeableBeacon(_eventLogic);
-        // moram prebaciti ownership na sebe kako bih mogao promijeniti adresu beacona (impl contract v2)
-        // ako ovo ne napravim ugovor će biti vlasnik pa neću moći pozvati određene funkcije
         beacon.transferOwnership(msg.sender);
     }
 
@@ -40,29 +35,20 @@ contract EventFactory {
             tokenName,
             "SHOW"
         );
-        // deploy novog ugovora za event
+
         BeaconProxy eventProxy = new BeaconProxy(
             address(beacon),
             eventCalldata
         );
-
-        // interface koristim zbog toga što ne moram kodirati funkciju setEventData sa abi.encodeWithSignature. Importiran je interface, dakle ovaj ugovor
-        // zna da postoji funkcija koja se zove setEventdata i očekuje struct. Da nemam importiran interface moram objasniti ovom ugoovoru
-        // da na adresi eventProxy-a (ugovor eventa kojeg sam deploy-a) postoji funkcija za postavljanje event data. To se radi sa low level call,
-        // odnosno na određenu adresu pozivam function selector sa određenim parameterima - abi.encodeWithSignature.abi
-        // razlog zasto ne importirati interface bi bio jedino ako zelim usparati na gas
 
         IEventImplementation eventInterface = IEventImplementation(
             address(eventProxy)
         );
         eventInterface.setEventData(_eventData);
         eventInterface.setTicketData(ticketTypes, supplies, prices);
-        // ugovor kreira proxy te postane vlasnik eventa, ovime vlasnik postaje organizator
         eventInterface.setOrganizer(msg.sender);
 
         emit EventCreated(address(eventProxy));
-        // da li uopce mora ista vracati? ako ne planiram ovaj podatak koristiti u drugom ili u ovom ugovoru, onda ne.
-        // ovdje ono što sam htio postići je bilo dohvaćanje adrese ugovora na frontu. Pravilan način za to postići je emitati event
         return address(eventProxy);
     }
 

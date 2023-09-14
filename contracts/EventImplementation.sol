@@ -70,7 +70,7 @@ contract EventImplementation is
     }
 
     function _baseURI() internal view override returns (string memory) {
-        string memory base = "https://showstarter.netlify.app/tickets/";
+        string memory base = "https://showstarter-api.onrender.com/tickets/";
         string memory proxyAddress = StringsUpgradeable.toHexString(
             address(this)
         );
@@ -98,11 +98,7 @@ contract EventImplementation is
             resellPrice <= tickets[ticketType].price,
             "Cijena preprodaje ne smije biti veca od originalne cijene ulaznice"
         );
-        // idToListedTicket[tokenId] = ListedTicket(
-        //     payable(msg.sender),
-        //     resellPrice,
-        //     true
-        // );
+
         ListedTicket storage ticket = idToListedTicket[tokenId];
         ticket.seller = payable(msg.sender);
         ticket.price = resellPrice;

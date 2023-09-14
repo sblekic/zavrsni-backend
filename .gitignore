@@ -8,3 +8,5 @@ artifacts/*
 
 scripts/*
 !scripts/deploy.js
+
+contracts/factoryComments.sol
