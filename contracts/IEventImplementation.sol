@@ -14,7 +14,6 @@ interface IEventImplementation {
     }
 
     struct ListedTicket {
-        uint256 tokenId;
         address payable seller;
         uint256 price;
         bool isListed;
@@ -27,6 +26,8 @@ interface IEventImplementation {
         uint[] memory supplies,
         uint[] memory prices
     ) external;
+
+    function setOrganizer(address newOwner) external;
 
     event TicketSale(address, uint256);
 

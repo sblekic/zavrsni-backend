@@ -181,6 +181,10 @@ let data = {
           name: "Imagine Dragons",
           address: "0xb2591fd0cef325fa4ddedc0a905a8b7977e40fd8",
         },
+        {
+          name: "APB",
+          address: "0x2f47f8ede9accc1b3464c26d15f4c9953e84fe22",
+        },
       ],
       tickets: [
         {

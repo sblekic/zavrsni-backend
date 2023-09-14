@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
+
 require("dotenv").config({ path: `.env.development` });
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -8,10 +9,10 @@ module.exports = {
   defaultNetwork: "ganache",
   networks: {
     ganache: {
-      url: "HTTP://192.168.1.103:7545",
+      url: "http://127.0.0.1:8545",
     },
     mumbai: {
-      url: process.env.API_URL,
+      url: process.env.NODE_PROVIDER_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
   },

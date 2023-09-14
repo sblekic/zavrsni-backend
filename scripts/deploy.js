@@ -28,6 +28,22 @@ async function main() {
   saveAbiFrontend(factoryAddress, "EventFactory");
   saveAbiFrontend(implementationAddress, "EventImplementation");
 
+  const artifactPaths = await hre.artifacts.getArtifactPaths();
+  const [factoryPath] = artifactPaths.filter((path) => {
+    return path.includes("EventFactory.json");
+  });
+  let localArtifact = require(factoryPath);
+  localArtifact.contractAddress = factoryAddress;
+  fs.writeFile(
+    factoryPath,
+    JSON.stringify(localArtifact, null, 2),
+    function writeJSON(err) {
+      if (err) return console.log(err);
+      // console.log(JSON.stringify(file));
+      console.log("writing to " + factoryPath);
+    }
+  );
+
   // ovo su testovi, bilo bi pametnije koristiti alate koje hh nudi ali eto, I live a dangerous life
 
   // // console.log(eventFactory.interface.fragments);

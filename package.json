@@ -7,7 +7,9 @@
     "dev": "cross-env NODE_ENV=development nodemon --exec babel-node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cross-env NODE_ENV=production babel-node src/server.js",
-    "populateDb": "cross-env NODE_ENV=development babel-node src/populateDb.js"
+    "populateDevDB": "cross-env NODE_ENV=development babel-node src/populateDB.js",
+    "populateProdDB": "cross-env NODE_ENV=production babel-node src/populateDB.js",
+    "ganache": "ganache --wallet.seed velicanstveniSeed"
   },
   "author": "Sandi Blekic",
   "license": "ISC",
@@ -20,7 +22,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "ethers": "^6.0.8",
+    "ethers": "^6.7.1",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.1",
@@ -36,6 +38,7 @@
     "@nomicfoundation/hardhat-verify": "^1.1.0",
     "@types/node": "^20.4.2",
     "cross-env": "^7.0.3",
+    "ganache": "^7.9.1",
     "hardhat": "^2.17.1",
     "nodemon": "^2.0.20"
   }

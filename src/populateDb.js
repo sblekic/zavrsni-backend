@@ -2,24 +2,22 @@ import config from "../env";
 import connect from "./db";
 import { ethers } from "ethers";
 import factoryArtifact from "../artifacts/contracts/EventFactory.sol/EventFactory.json";
-import implementationArtifact from "../artifacts/contracts/EventImplementation.sol/EventImplementation.json";
 import data from "./polygonData";
 
 async function main() {
   const db = await connect();
 
   // mijenjaj ovisno o provideru; dev vs prod
-  const provider = new ethers.JsonRpcProvider("HTTP://192.168.1.103:7545");
+  const provider = new ethers.JsonRpcProvider(process.env.NODE_PROVIDER_URL);
 
   // kreacija "walleta"
-  const signingKey = new ethers.SigningKey(
-    "0x79ed68cf5f6e968c1103aab5fa132d414fc1be328ffe71662067dbca2498e989"
-  );
+  // @ts-ignore
+  const signingKey = new ethers.SigningKey(process.env.PRIVATE_KEY);
   const signer = new ethers.BaseWallet(signingKey, provider);
 
   const eventFactory = new ethers.Contract(
     // treba dodati adresu ugovora u artifacts, ovo mijenjas svaki put kada se ugovor kompajlira
-    "0xEbac03af611131Cdaeaf9C53d029d5b4C57DD39a",
+    factoryArtifact.contractAddress,
     factoryArtifact.abi,
     signer
   );
@@ -84,17 +82,6 @@ async function insertEvent(eventFactory, eventIndex) {
   );
 
   let eventReceipt = await eventTx.wait();
-
-  let [proxyAddr] = eventReceipt.logs[3].args;
-  console.log("BeaconProxy deployed at address:", proxyAddr);
-
-  // let eventProxy = new ethers.Contract(
-  //   proxyAddr,
-  //   implementationArtifact.abi,
-  //   signer
-  // );
-
-  // console.log(await eventProxy.name());
 }
 
 async function insertArtists() {

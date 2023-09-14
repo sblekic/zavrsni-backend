@@ -9,7 +9,6 @@ import _ from "lodash";
 
 import authRoutes from "./routes/authRoutes";
 import connect from "./db";
-import storage from "./memory_storage";
 
 import asyncHandler from "express-async-handler";
 
@@ -144,9 +143,9 @@ app.get(
 
     if (query._any) {
       // @ts-ignore
-      artistFilter["lineup.name"] = new RegExp(query._any);
+      artistFilter["lineup.name"] = new RegExp(query._any, "i");
       // @ts-ignore
-      venueFilter["venue.city"] = new RegExp(query._any);
+      venueFilter["venue.city"] = new RegExp(query._any, "i");
 
       let search = await db
         .collection("events")
@@ -205,14 +204,14 @@ app.post(
 
 app.get(
   "/venues",
-  formatToTitleCase,
+
   asyncHandler(async (req, res) => {
     let query = req.query;
     let filter = {};
 
     if (query._any) {
       // @ts-ignore
-      filter["name"] = new RegExp(query._any);
+      filter["name"] = new RegExp(query._any, "i");
     }
 
     let db = await connect();
@@ -225,14 +224,14 @@ app.get(
 
 app.get(
   "/artists",
-  formatToTitleCase,
+
   asyncHandler(async (req, res) => {
     let query = req.query;
     let filter = {};
 
     if (query._any) {
       // @ts-ignore
-      filter["name"] = new RegExp(query._any);
+      filter["name"] = new RegExp(query._any, "i");
     }
 
     let db = await connect();
@@ -244,32 +243,10 @@ app.get(
   })
 );
 
-app.get("/", (req, res) => res.send("Hello World, ovaj puta preko browsera!"));
-
-app.get(
-  "/db_posts",
-  asyncHandler(async (req, res) => {
-    let db = await connect();
-    let cursor = await db.collection("posts").find();
-    let results = await cursor.toArray();
-    console.log(results);
-  })
-);
-
 // sa verifyToken testiram ako će se pokrenuti sljedeci handler ako nemam jwt
-app.get("/posts", verifyToken, (req, res) => {
-  res.json(storage.posts); // vraćamo postove direktno koristeći `json` metodu
-});
-
-app.post("/posts", (req, res) => {
-  let data = req.body;
-  // ovo inače radi baza (autoincrement ili sl.), ali čisto za primjer
-  data.id = 1 + storage.posts.reduce((max, el) => Math.max(el.id, max), 0);
-  // dodaj u našu bazu (lista u memoriji)
-  storage.posts.push(data);
-  // vrati ono što je spremljeno
-  res.json(data); // vrati podatke za referencu
-});
+// app.get("/posts", verifyToken, (req, res) => {
+//   res.json(storage.posts); // vraćamo postove direktno koristeći `json` metodu
+// });
 
 app.use("/auth", authRoutes);
 

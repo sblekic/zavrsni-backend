@@ -17,17 +17,12 @@ contract EventFactory {
     UpgradeableBeacon immutable beacon;
 
     constructor(address _eventLogic) {
-        //beacon = new ShipBeacon(_initBlueprint);
         beacon = new UpgradeableBeacon(_eventLogic);
         // moram prebaciti ownership na sebe kako bih mogao promijeniti adresu beacona (impl contract v2)
         // ako ovo ne napravim ugovor će biti vlasnik pa neću moći pozvati određene funkcije
         beacon.transferOwnership(msg.sender);
     }
 
-    //vjerojatno dohvacati u fn adresu eventOrganizera tako da ga se moze
-    //postaviti kao owner eventa u eventImplementation ugovor putem transferOwnership
-    //ovo mi je bitno tako da mogu dohvatiti svi eventi registrirani sa strane organizatora (nekakav dash)
-    //tehnički ovaj ugovor kreira proxy i po ownableUpgradeable docs on postaje po defaultu owner (testirano i tocno)
     function createEvent(
         IEventImplementation.EventData memory _eventData,
         string[] memory ticketTypes,
@@ -35,7 +30,6 @@ contract EventFactory {
         uint[] memory prices
     ) external returns (address) {
         eventId.increment();
-        // moram još vidjeti kako će mintanje funkcionirati
         string memory tokenName = string.concat(
             "Showstarter Event ",
             Strings.toString(eventId.current())
@@ -58,12 +52,13 @@ contract EventFactory {
         // odnosno na određenu adresu pozivam function selector sa određenim parameterima - abi.encodeWithSignature.abi
         // razlog zasto ne importirati interface bi bio jedino ako zelim usparati na gas
 
-        IEventImplementation(address(eventProxy)).setEventData(_eventData);
-        IEventImplementation(address(eventProxy)).setTicketData(
-            ticketTypes,
-            supplies,
-            prices
+        IEventImplementation eventInterface = IEventImplementation(
+            address(eventProxy)
         );
+        eventInterface.setEventData(_eventData);
+        eventInterface.setTicketData(ticketTypes, supplies, prices);
+        // ugovor kreira proxy te postane vlasnik eventa, ovime vlasnik postaje organizator
+        eventInterface.setOrganizer(msg.sender);
 
         emit EventCreated(address(eventProxy));
         // da li uopce mora ista vracati? ako ne planiram ovaj podatak koristiti u drugom ili u ovom ugovoru, onda ne.

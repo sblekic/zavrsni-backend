@@ -34,7 +34,7 @@ export const ethMessage = asyncHandler(async (req, res) => {
 
 // @desc verify signature.
 // obicno provjera ako je javni ključ dobiveni iz funkcije koja prima message i signature isti kao javni ključ kornisnika
-// vjerojatno Moralis radi u pozadini nešto slično.. barem se nadam
+// vjerojatno Moralis radi u pozadini nešto slično
 // @route POST /auth/verify
 export const ethVerify = asyncHandler(async (req, res) => {
   try {

@@ -45,10 +45,12 @@ contract EventImplementation is
         );
     }
 
+    function setOrganizer(address newOwner) external {
+        transferOwnership(newOwner);
+    }
+
     function setEventData(EventData memory _eventData) external {
-        // ocito mogu samo assign struct na struct jer su istog tipa?
         eventData = _eventData;
-        console.log("usao u setEventData");
     }
 
     function setTicketData(
@@ -96,12 +98,15 @@ contract EventImplementation is
             resellPrice <= tickets[ticketType].price,
             "Cijena preprodaje ne smije biti veca od originalne cijene ulaznice"
         );
-        idToListedTicket[tokenId] = ListedTicket(
-            tokenId,
-            payable(msg.sender),
-            resellPrice,
-            true
-        );
+        // idToListedTicket[tokenId] = ListedTicket(
+        //     payable(msg.sender),
+        //     resellPrice,
+        //     true
+        // );
+        ListedTicket storage ticket = idToListedTicket[tokenId];
+        ticket.seller = payable(msg.sender);
+        ticket.price = resellPrice;
+        ticket.isListed = true;
         // transfer na ugovoru za preprodaju
         safeTransferFrom(msg.sender, address(this), tokenId);
         emit ListedTicketSuccess(tokenId);
@@ -120,6 +125,8 @@ contract EventImplementation is
             tokenId
         );
         idToListedTicket[tokenId].isListed = false;
+        // transfer novaca prema prodavatelju
+        idToListedTicket[tokenId].seller.transfer(msg.value);
         emit SecondarySale(tokenId);
     }
 
