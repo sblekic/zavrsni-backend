@@ -45,8 +45,8 @@ async function main() {
     }
   );
 
-  // await insertArtists();
-  // await insertVenues();
+  await insertArtists();
+  await insertVenues();
 
   await insertEvent(eventFactory, i);
   return;
