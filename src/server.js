@@ -17,6 +17,8 @@ import { formatToTitleCase } from "./middleware/formatToTitleCase";
 
 import { ObjectId } from "mongodb";
 
+import job from "./cron.js";
+
 const app = express(); // instanciranje aplikacije
 
 // iz https://stackoverflow.com/questions/18864677/what-is-process-env-port-in-node-js
@@ -42,7 +44,7 @@ app.use(cookieParser());
 app.get(
   "/tickets/:eventId/:tokenId",
   asyncHandler(async (req, res) => {
-    console.log(req.params.eventId, req.params.tokenId);
+    console.log("tokenURI ruta");
     const eventId = req.params.eventId;
     const tokenId = req.params.tokenId;
     let db = await connect();
@@ -70,7 +72,7 @@ app.get(
 
 // ulaznice koje su u preprodaji
 app.get(
-  "/tickets/event/:eventId",
+  "/tickets/event/:eventId/secondary",
   asyncHandler(async (req, res) => {
     console.log("get listed tickets");
     let filter = {
@@ -82,6 +84,7 @@ app.get(
       .collection("tickets")
       .find({ $and: [{ isListed: true }, { eventAddress: eventId }] });
     let result = await cursor.toArray();
+    console.log(result);
     res.send(result);
   })
 );
@@ -272,6 +275,8 @@ const startServer = async () => {
   });
 
   app.listen(port, () => console.log(`Backend sluša na port ${port}`));
+  // budim renderov server jer mu se ne da
+  job.start();
 };
 
 startServer();
