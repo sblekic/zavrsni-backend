@@ -260,10 +260,15 @@ app.get(
   })
 );
 
-// sa verifyToken testiram ako će se pokrenuti sljedeci handler ako nemam jwt
-// app.get("/posts", verifyToken, (req, res) => {
-//   res.json(storage.posts); // vraćamo postove direktno koristeći `json` metodu
-// });
+app.get(
+  "/test",
+  verifyToken,
+  asyncHandler((req, res) => {
+    console.log("verifying token..");
+    res.status(200).send("Token is valid");
+    return;
+  })
+);
 
 app.use("/auth", authRoutes);
 
