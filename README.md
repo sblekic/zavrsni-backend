@@ -17,6 +17,16 @@ Scalping je praksa koja uvelike utežava i često u potpunosti uskraćuje kupovi
 
 Cilj ove aplikacije je obožavateljima pružati sigurnu plaformu za kupnju i preprodaju ulaznica a organizatorima događaja omogućiti kontrolu nad sekundarnim tržištem
 
+## Funkcionalnosti
+
+![Alt text here](./UseCaseDiagram.svg)
+
+Za testiranje svih funkcionalnosti dovoljno je dodati račun na Metamask putem privatnog ključa:
+
+```
+0xc8485becb0b71ecf1d7b4d70ea8162d291e28f4eb7deb64eeed6aa6d96100def
+```
+
 ## Postavljanje projekta na lokalnom račualu
 
 ### Potreban softver
